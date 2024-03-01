@@ -8,6 +8,7 @@ const { connectMongoDb } = require("./config/mongoDb");
 
 // Routes
 const userRoute = require("./routes/user");
+const { checkForAuthenticationCookie } = require("./middlewares/auth");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
 app.use(express.static(path.resolve("uploads")));
+app.use(checkForAuthenticationCookie("token"));
 
 app.use("/api/v1", userRoute);
 

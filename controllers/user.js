@@ -29,6 +29,14 @@ module.exports.handleUserRegister = async (req, res) => {
   }
 };
 
-module.exports.handleUserLogin = async(req, res) => {
-    const {email, password} = req.body;
-}
+module.exports.handleUserLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const token = await User.matchPasswordAndGenerateToken(email, password);
+    console.log(token);
+    return res.cookie("token", token).json({ success: true, token });
+  } catch (error) {
+    return res.json({ error: "Incorrect Email or password" });
+  }
+};

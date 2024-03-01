@@ -1,6 +1,7 @@
 const { randomBytes, createHmac } = require("crypto");
 const mongoose = require("mongoose");
 const validator = require("validator");
+const { createTokenForUser } = require("../services/authentication");
 
 const userSchema = new mongoose.Schema(
   {
@@ -24,7 +25,7 @@ const userSchema = new mongoose.Schema(
     },
     profile_url: {
       type: String,
-    //   required: true,
+      //   required: true,
       default:
         "https://img.freepik.com/free-vector/isolated-young-handsome-man-different-poses-white-background-illustration_632498-859.jpg?w=740&t=st=1709122726~exp=1709123326~hmac=fbd1ca7b99d08036d4e6db72df65b887ccceb7acdacb0b2cf44686ac1b472d0d",
     },
@@ -41,43 +42,57 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", function (next) {
-  const user = this;
+  try {
+    const user = this;
+    // console.log("user", user);
 
-  if (!user.isModified("password")) return;
+    if (!user.isModified("password")) return next();
 
-  const salt = randomBytes(16).toString();
+    const salt = randomBytes(16).toString();
 
-  const hashedPassword = createHmac("sha256", salt)
-    .update(user.password)
-    .digest("hex");
+    const hashedPassword = createHmac("sha256", salt)
+      .update(user.password)
+      .digest("hex");
+    // console.log("hashedPassword", hashedPassword);
 
-  this.salt = salt;
-  this.password = hashedPassword;
+    user.salt = salt;
+    user.password = hashedPassword;
 
-  return next();
+    return next();
+  } catch (error) {
+    return next(error);
+  }
 });
 
-userSchema.static("matchPassword", async function (email, password) {
-  const user = await this.findOne({ email });
+userSchema.static(
+  "matchPasswordAndGenerateToken",
+  async function (email, password) {
+    try {
+      const user = await this.findOne({ email }).select("+password");
+      // console.log("user", user);
 
-  if (!user) throw new Error("User not found!");
+      if (!user) throw new Error("User not found!");
 
-  const salt = this.salt;
-  const hashedPassword = this.password;
+      const salt = user.salt;
+      const hashedPassword = user.password;
+      // console.log("hashedPassword", hashedPassword);
 
-  console.log("hashedPassword", hashedPassword);
+      const userProvidedHash = createHmac("sha256", salt)
+        .update(password)
+        .digest("hex");
+      // console.log("userProvidedHash", userProvidedHash);
 
-  const userProvidedHash = createHmac("sha256", salt)
-    .update(password)
-    .digest("hex");
+      if (hashedPassword !== userProvidedHash)
+        throw new Error("Incorrect Password");
 
-  console.log("userProvidedHash", userProvidedHash);
-
-  if (userProvidedHash !== hashedPassword)
-    throw new Error("Incorrect Password");
-
-  return user;
-});
+      user.password = undefined;
+      const token = createTokenForUser(user);
+      return token;
+    } catch (error) {
+      return res.json({ error: "Token not Generate!", error });
+    }
+  }
+);
 
 const User = mongoose.model("user", userSchema);
 
