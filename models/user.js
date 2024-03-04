@@ -19,24 +19,17 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Please Enter Your PAssword"],
+      required: [true, "Please Enter Your Password"],
       minLength: [8, "Password Should Contain minimun 8 characters"],
-      select: false,
-    },
-    profile_url: {
-      type: String,
-      //   required: true,
-      default:
-        "https://img.freepik.com/free-vector/isolated-young-handsome-man-different-poses-white-background-illustration_632498-859.jpg?w=740&t=st=1709122726~exp=1709123326~hmac=fbd1ca7b99d08036d4e6db72df65b887ccceb7acdacb0b2cf44686ac1b472d0d",
     },
     salt: {
       type: String,
     },
-    role: {
-      type: String,
-      enum: ["ADMIN", "USER"],
-      default: "USER",
-    },
+    // role: {
+    //   type: String,
+    //   enum: ["ADMIN", "USER"],
+    //   default: "USER",
+    // },
   },
   { timestamps: true }
 );

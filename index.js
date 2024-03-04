@@ -2,11 +2,12 @@ require("dotenv").config();
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
-const multer = require("multer");
+// const multer = require("multer");
 const cookieParser = require("cookie-parser");
 const { connectMongoDb } = require("./config/mongoDb");
 
 // Routes
+const todoRoute = require("./routes/todo");
 const userRoute = require("./routes/user");
 const { checkForAuthenticationCookie } = require("./middlewares/auth");
 
@@ -21,9 +22,11 @@ app.use(cors());
 app.use(express.static(path.resolve("uploads")));
 app.use(checkForAuthenticationCookie("token"));
 
+app.use("/", todoRoute);
 app.use("/api/v1", userRoute);
 
 app.get("/", (req, res) => {
+  console.log(req.body);
   res.send("Jai Shree Krishna");
 });
 
