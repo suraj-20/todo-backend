@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const { connectMongoDb } = require("./config/mongoDb");
 
 // Routes
-const todoRoute = require("./routes/todo");
+const todoRoute = require("./routes/todoRoute");
 const userRoute = require("./routes/user");
 const { checkForAuthenticationCookie } = require("./middlewares/auth");
 
@@ -20,9 +20,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
 app.use(express.static(path.resolve("uploads")));
-app.use(checkForAuthenticationCookie("token"));
+// app.use(checkForAuthenticationCookie("token"));
 
-app.use("/", todoRoute);
+app.use("/api/v1", todoRoute);
 app.use("/api/v1", userRoute);
 
 app.get("/", (req, res) => {

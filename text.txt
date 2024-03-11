@@ -1,0 +1,22 @@
+require all nessecery pakages - npm i express, mongoose, multer, dotenv, jsonwebtoken, cors, cookie-parser, nodemon
+
+create modals 
+create router
+create controller
+create service
+create middleware
+
+create model for user registration (also create user password hashing)
+create route for user registration
+create controller for user registration
+create service for generateTokenForUser and validate token for user.
+create middleware for user Authentication using cookies
+
+create route for user login
+create controller for user login
+
+create new model for what to do 
+create route for todo, delete todo, mark as done 
+create controller for all these
+
+
