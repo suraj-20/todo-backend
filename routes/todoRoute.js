@@ -37,4 +37,30 @@ router.get("/todos/:id", async (req, res) => {
   }
 });
 
+router.delete("/todos/:id", async (req, res) => {
+  try {
+    const todo = await Todo.findByIdAndDelete(req.params.id);
+    if (!todo) {
+      return res.status(404).json({ error: "Todo not found." });
+    }
+    res.status(200).json({ message: "Todo deleted successfully", todo });
+  } catch (error) {
+    res.status(500).json("Internal Server Error", error);
+  }
+});
+
+router.put("/todos/:id", async (req, res) => {
+  try {
+    const todo = await Todo.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!todo) {
+      return res.status(404).json({ error: "Todo not found." });
+    }
+    res.status(200).json({ message: "Todo Updated successfully.", todo });
+  } catch (error) {
+    res.status(500).json("Internal Server Error", error);
+  }
+});
+
 module.exports = router;
