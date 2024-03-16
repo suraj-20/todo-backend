@@ -1,7 +1,6 @@
-const { randomBytes, createHmac } = require("crypto");
+// const { randomBytes, createHmac } = require("crypto");
 const mongoose = require("mongoose");
 const validator = require("validator");
-const { createTokenForUser } = require("../services/authentication");
 
 const userSchema = new mongoose.Schema(
   {
@@ -22,6 +21,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please Enter Your Password"],
       minLength: [8, "Password Should Contain minimun 8 characters"],
     },
+    todos: [{ type: mongoose.Schema.Types.ObjectId, ref: "todo" }],
     salt: {
       type: String,
     },
@@ -34,58 +34,59 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save", function (next) {
-  try {
-    const user = this;
-    // console.log("user", user);
+// userSchema.pre("save", function (next) {
+//   try {
+//     const user = this;
+//     // console.log("user", user);
 
-    if (!user.isModified("password")) return next();
+//     if (!user.isModified("password")) return next();
 
-    const salt = randomBytes(16).toString();
+//     const salt = randomBytes(16).toString();
 
-    const hashedPassword = createHmac("sha256", salt)
-      .update(user.password)
-      .digest("hex");
-    // console.log("hashedPassword", hashedPassword);
+//     const hashedPassword = createHmac("sha256", salt)
+//       .update(user.password)
+//       .digest("hex");
+//     // console.log("hashedPassword", hashedPassword);
 
-    user.salt = salt;
-    user.password = hashedPassword;
+//     user.salt = salt;
+//     user.password = hashedPassword;
 
-    return next();
-  } catch (error) {
-    return next(error);
-  }
-});
+//     return next();
+//   } catch (error) {
+//     return next(error);
+//   }
+// });
 
-userSchema.static(
-  "matchPasswordAndGenerateToken",
-  async function (email, password) {
-    try {
-      const user = await this.findOne({ email }).select("+password");
-      // console.log("user", user);
+// userSchema.static(
+//   "matchPasswordAndGenerateToken",
+//   async function (email, password) {
+//     try {
+//       const user = await this.findOne({ email }).select("+password");
 
-      if (!user) throw new Error("User not found!");
+//       // console.log("user", user);
 
-      const salt = user.salt;
-      const hashedPassword = user.password;
-      // console.log("hashedPassword", hashedPassword);
+//       if (!user) throw new Error("User not found!");
 
-      const userProvidedHash = createHmac("sha256", salt)
-        .update(password)
-        .digest("hex");
-      // console.log("userProvidedHash", userProvidedHash);
+//       const salt = user.salt;
+//       const hashedPassword = user.password;
+//       // console.log("hashedPassword", hashedPassword);
 
-      if (hashedPassword !== userProvidedHash)
-        throw new Error("Incorrect Password");
+//       const userProvidedHash = createHmac("sha256", salt)
+//         .update(password)
+//         .digest("hex");
+//       // console.log("userProvidedHash", userProvidedHash);
 
-      user.password = undefined;
-      const token = createTokenForUser(user);
-      return token;
-    } catch (error) {
-      return res.json({ error: "Token not Generate!", error });
-    }
-  }
-);
+//       if (hashedPassword !== userProvidedHash)
+//         throw new Error("Incorrect Password");
+
+//       user.password = undefined;
+//       const token = createTokenForUser(user);
+//       return token;
+//     } catch (error) {
+//       return res.json({ error: "Token not Generate!", error });
+//     }
+//   }
+// );
 
 const User = mongoose.model("user", userSchema);
 

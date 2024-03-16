@@ -1,36 +1,55 @@
 const User = require("../models/user");
+const bcrypt = require("bcrypt");
+const { createTokenForUser } = require("../services/authentication");
 
 module.exports.handleUserRegister = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists
+    let existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.json({ error: "Email already exist" });
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    const user = await User.create({
-      name,
-      email,
-      password,
-    });
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    return res.status(200).json({ success: 1, user });
+    // Create new user
+    const newUser = new User({ name, email, password: hashedPassword });
+    await newUser.save();
+
+    res.status(201).json({ message: "User registered successfully", newUser });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: 0, message: "Internal server error" });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 module.exports.handleUserLogin = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    const token = await User.matchPasswordAndGenerateToken(email, password);
-    console.log(token);
-    return res.json({ success: true, token });
+    const { email, password } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email }).populate("todos");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = createTokenForUser(user);
+    console.log("Token in user login : ", token);
+    // Generate and send token if login successful
+    // (You can use JWT or any other authentication mechanism here)
+
+    res.status(200).json({ message: "Login successful", user, token });
   } catch (error) {
-    return res.json({ error: "Incorrect Email or password" });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };

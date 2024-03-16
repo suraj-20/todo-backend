@@ -1,25 +1,40 @@
 const express = require("express");
 const Todo = require("../models/todoModel");
+const User = require("../models/user");
 
 const router = express.Router();
 
 router.post("/todos", async (req, res) => {
-  const { title, description } = req.body;
   try {
-    const todo = await Todo.create({
-      title,
-      description,
-    });
-    res.status(200).json(todo);
+    const { title, description, userId } = req.body;
+
+    // Create new todo
+    const newTodo = new Todo({ title, description });
+    await newTodo.save();
+
+    await User.findByIdAndUpdate(userId, { $push: { todos: newTodo._id } });
+
+    res
+      .status(201)
+      .json({ message: "Todo created successfully", todo: newTodo });
   } catch (error) {
-    return res.json("Internal server error", error);
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 router.get("/todos", async (req, res) => {
   try {
-    const todos = await Todo.find({});
-    res.status(200).json(todos);
+    console.log(req.user);
+    const userId = req.user._id;
+    console.log("userId", userId);
+
+    const user = await User.findById(userId).populate("todos");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    // const todos = await Todo.find({});
+    res.status(200).json({ todos: user.todos });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -50,8 +65,11 @@ router.delete("/todos/:id", async (req, res) => {
 });
 
 router.put("/todos/:id", async (req, res) => {
+  console.log(req.user);
   try {
-    const todo = await Todo.findByIdAndUpdate(req.params.id, req.body, {
+    const todoData = await Todo.findOne({ _id: req.user._id });
+    todoData.body[req.body];
+    const todo = await Todo.findByIdAndUpdate(req.user.id, req.todoData.body, {
       new: true,
     });
     if (!todo) {

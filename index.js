@@ -9,7 +9,7 @@ const { connectMongoDb } = require("./config/mongoDb");
 // Routes
 const todoRoute = require("./routes/todoRoute");
 const userRoute = require("./routes/user");
-const { checkForAuthenticationCookie } = require("./middlewares/auth");
+const { fetchUser } = require("./middlewares/auth");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -20,10 +20,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
 app.use(express.static(path.resolve("uploads")));
-// app.use(checkForAuthenticationCookie("token"));
 
-app.use("/api/v1", todoRoute);
 app.use("/api/v1", userRoute);
+app.use("/api/v1", fetchUser, todoRoute);
 
 app.get("/", (req, res) => {
   console.log(req.body);
