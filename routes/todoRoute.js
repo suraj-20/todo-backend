@@ -68,17 +68,15 @@ router.delete("/todos/:id", async (req, res) => {
 });
 
 router.put("/todos/:id", async (req, res) => {
-  console.log(req.user);
   try {
-    const todoData = await Todo.findOne({ _id: req.user._id });
-    todoData.body[req.body];
-    const todo = await Todo.findByIdAndUpdate(req.user.id, req.todoData.body, {
+    console.log(req.user, req.params.id);
+    const todo = await Todo.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
     if (!todo) {
       return res.status(404).json({ error: "Todo not found." });
     }
-    res.status(200).json({ message: "Todo Updated successfully.", todo });
+    res.status(201).json({ message: "Todo Updated successfully.", todo });
   } catch (error) {
     res.status(500).json("Internal Server Error", error);
   }
