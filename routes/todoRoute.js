@@ -6,10 +6,13 @@ const router = express.Router();
 
 router.post("/todos", async (req, res) => {
   try {
-    const { title, description, userId } = req.body;
+    console.log(req.user);
+    const userId = req.user._id;
+    console.log("user id", userId);
+    const { title, description } = req.body;
 
     // Create new todo
-    const newTodo = new Todo({ title, description });
+    const newTodo = new Todo({ title, description, userId });
     await newTodo.save();
 
     await User.findByIdAndUpdate(userId, { $push: { todos: newTodo._id } });
