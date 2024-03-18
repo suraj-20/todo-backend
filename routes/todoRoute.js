@@ -85,16 +85,19 @@ router.put("/todos/:id", async (req, res) => {
 router.put("/updateTodo/:id", async (req, res) => {
   try {
     console.log(req.user, req.params.id);
-    const todo = await Todo.findByIdAndUpdate(
-      req.params.id,
-      { $set: { completed: req.body.completed } },
-      {
-        new: true,
-      }
-    );
+
+    // Find the todo by ID
+    const todo = await Todo.findById(req.params.id);
+
     if (!todo) {
       return res.status(404).json({ error: "Todo not found." });
     }
+
+    // Toggle the completed field
+    todo.completed = !todo.completed;
+
+    // Save the updated todo
+    await todo.save();
     res.status(201).json({ message: "Todo Updated successfully.", todo });
   } catch (error) {
     res.status(500).json("Internal Server Error", error);
