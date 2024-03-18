@@ -82,12 +82,16 @@ router.put("/todos/:id", async (req, res) => {
   }
 });
 
-router.put("/updateTodo/:id", async(req, res) => {
+router.put("/updateTodo/:id", async (req, res) => {
   try {
     console.log(req.user, req.params.id);
-    const todo = await Todo.findByIdAndUpdate(req.params.id, req.body.completed, {
-      new: true,
-    });
+    const todo = await Todo.findByIdAndUpdate(
+      req.params.id,
+      { completed: true },
+      {
+        new: true,
+      }
+    );
     if (!todo) {
       return res.status(404).json({ error: "Todo not found." });
     }
@@ -95,6 +99,6 @@ router.put("/updateTodo/:id", async(req, res) => {
   } catch (error) {
     res.status(500).json("Internal Server Error", error);
   }
-})
+});
 
 module.exports = router;
