@@ -87,7 +87,7 @@ router.put("/updateTodo/:id", async (req, res) => {
     console.log(req.user, req.params.id);
     const todo = await Todo.findByIdAndUpdate(
       req.params.id,
-      { completed: true },
+      { $set: { completed: req.body.completed } },
       {
         new: true,
       }
